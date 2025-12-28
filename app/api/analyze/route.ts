@@ -44,7 +44,7 @@ export async function POST(req: Request) {
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.8,
-      max_tokens: 2000,
+      max_tokens: 3000, // Increased for deep analysis (800-1000 words Chinese)
       stream: true,
     });
 
