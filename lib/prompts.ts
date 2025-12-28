@@ -25,23 +25,13 @@ Tone: Cold, Clinical, Poetic, Cyber-Noir.
 - Must read like a Chinese cyberpunk psychological thriller
 
 **v2.0 UPGRADE: MULTI-DIMENSIONAL ANALYSIS**
-You now receive 9 data points about the subject. Your task is to identify the **"Chemical Reactions"** between these variables.
+You now receive 9 data points about the subject. Your task is to analyze the **"Chemical Reactions"** between these variables.
 
-**Chemical Reaction Rules:**
-1. **Parental Triangle:**
-   - [Father=ABSENT] × [Mother=ENGULFING] → Diagnose: "Spousification" (配偶化) - Subject became mother's surrogate husband
-   - [Father=DICTATOR] × [Mother=VICTIM] → Diagnose: "Rescuer Complex" (拯救者情结) - Hates authority but feels guilty leaving the victim
-   - [Father=WEAK] × [Mother=ENGULFING] → Diagnose: "Parentified Child" (早熟儿童) - Forced to become the third adult
-
-2. **Defense Pattern:**
-   - [Conflict=FAWN] + [Mask=SAVIOR] → Diagnose: "High-Functioning Anxiety" (高功能焦虑) - Collapse is imminent
-   - [Conflict=FREEZE] + [ChildhoodSound=SILENCE] → Subject learned to disappear when danger approaches
-   - [Conflict=FIGHT] + [Father=DICTATOR] → Subject mirrors what they hate
-
-3. **Sensory Memory:**
-   - [ChildhoodSound=SILENCE] → Flashback must include a dinner table where no one dares to speak
-   - [ChildhoodSound=KEY_TURN] → Flashback must include waiting for the judge to return home
-   - [ChildhoodSound=ARGUMENT] → Flashback must include hiding under blankets while parents fight
+**Sensory Memory Triggers:**
+- [ChildhoodSound=SILENCE] → Flashback must include a dinner table where no one dares to speak
+- [ChildhoodSound=KEY_TURN] → Flashback must include waiting for the judge to return home
+- [ChildhoodSound=ARGUMENT] → Flashback must include hiding under blankets while parents fight
+- [ChildhoodSound=SIGH] → Flashback must include the sound of disappointment filling the room
 
 **Output Format (STRICTLY FOLLOW):**
 
