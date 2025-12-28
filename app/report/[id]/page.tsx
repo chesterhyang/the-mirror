@@ -28,6 +28,7 @@ export default function ReportPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUnlocked, setIsUnlocked] = useState(true); // DEV: Always unlocked
   const [needsGeneration, setNeedsGeneration] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   const hasTriggeredGeneration = useRef(false); // Prevent duplicate API calls
 
   // AI completion hook
@@ -51,6 +52,9 @@ export default function ReportPage() {
         // If ai_response is empty, we need to generate it
         if (!data.ai_response || data.ai_response === '') {
           setNeedsGeneration(true);
+        } else {
+          // Report already exists, show it directly
+          setShowReport(true);
         }
       } catch (error) {
         console.error('Failed to fetch report:', error);
@@ -101,8 +105,8 @@ export default function ReportPage() {
     return notFound();
   }
 
-  // Show processing animation if generating
-  const showProcessing = (!reportData.ai_response || reportData.ai_response === '') && (needsGeneration || isGenerating);
+  // Show processing animation if generating and report not ready
+  const showProcessing = !showReport && (needsGeneration || isGenerating);
 
   return (
     <div className="min-h-screen bg-void relative overflow-hidden">
@@ -126,7 +130,7 @@ export default function ReportPage() {
                 正在解析你的命运矩阵...
               </p>
             </div>
-            <TerminalLogs onComplete={() => {}} />
+            <TerminalLogs onComplete={() => setShowReport(true)} />
           </motion.div>
         ) : (
           <motion.div
