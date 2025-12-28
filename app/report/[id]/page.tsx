@@ -1,22 +1,20 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, notFound } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { useCompletion } from 'ai/react';
 
 import { UserProfile } from '@/lib/types';
 import { parseReportSections } from '@/lib/utils';
 import DossierHeader from '@/components/report/DossierHeader';
 import ReportSection from '@/components/report/ReportSection';
 import PaywallOverlay from '@/components/report/PaywallOverlay';
-import TerminalLogs, { MatrixRain } from '@/components/processing/TerminalLogs';
 import GlitchText from '@/components/ui/GlitchText';
 
 interface ReportData {
   short_code: string;
   profile: UserProfile;
-  ai_response: string | null;
+  ai_response: string;
   created_at: string;
 }
 
@@ -27,14 +25,6 @@ export default function ReportPage() {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUnlocked, setIsUnlocked] = useState(true); // DEV: Always unlocked
-  const [needsGeneration, setNeedsGeneration] = useState(false);
-  const [showReport, setShowReport] = useState(false);
-  const hasTriggeredGeneration = useRef(false); // Prevent duplicate API calls
-
-  // AI completion hook
-  const { completion, complete, isLoading: isGenerating } = useCompletion({
-    api: '/api/analyze',
-  });
 
   // Fetch report data on mount
   useEffect(() => {
@@ -47,15 +37,21 @@ export default function ReportPage() {
         }
 
         const data = await res.json();
-        setReportData(data);
 
-        // If ai_response is empty, we need to generate it
+        console.log('[DEBUG] Fetched report:', {
+          caseId: data.short_code,
+          ai_response_length: data.ai_response?.length || 0,
+          ai_response_preview: data.ai_response?.substring(0, 50) || 'EMPTY'
+        });
+
+        // If ai_response is empty, show error
         if (!data.ai_response || data.ai_response === '') {
-          setNeedsGeneration(true);
-        } else {
-          // Report already exists, show it directly
-          setShowReport(true);
+          console.error('[ERROR] Report exists but ai_response is empty');
+          notFound();
+          return;
         }
+
+        setReportData(data);
       } catch (error) {
         console.error('Failed to fetch report:', error);
         notFound();
@@ -67,23 +63,8 @@ export default function ReportPage() {
     fetchReport();
   }, [caseId]);
 
-  // Auto-generate AI response if needed (only once)
-  useEffect(() => {
-    if (needsGeneration && reportData && !hasTriggeredGeneration.current) {
-      hasTriggeredGeneration.current = true;
-      // Trigger AI generation
-      complete('', {
-        body: {
-          profile: reportData.profile,
-          caseId: caseId,
-        },
-      });
-    }
-  }, [needsGeneration, reportData, complete, caseId]);
-
-  // Parse sections from existing or streaming completion
-  const displayText = reportData?.ai_response || completion;
-  const sections = displayText ? parseReportSections(displayText) : null;
+  // Parse sections from ai_response
+  const sections = reportData?.ai_response ? parseReportSections(reportData.ai_response) : null;
 
   if (isLoading) {
     return (
@@ -105,39 +86,14 @@ export default function ReportPage() {
     return notFound();
   }
 
-  // Show processing animation if generating and report not ready
-  const showProcessing = !showReport && (needsGeneration || isGenerating);
-
   return (
     <div className="min-h-screen bg-void relative overflow-hidden">
-      {/* Matrix rain background for processing */}
-      {showProcessing && <MatrixRain />}
-
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {showProcessing ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="py-12"
-          >
-            <div className="text-center mb-8">
-              <GlitchText
-                text="INITIATING SOUL AUTOPSY"
-                className="font-mono text-2xl text-neon-red"
-                continuous
-              />
-              <p className="mt-4 chinese-serif text-ghost-white/60">
-                正在解析你的命运矩阵...
-              </p>
-            </div>
-            <TerminalLogs onComplete={() => setShowReport(true)} />
-          </motion.div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="py-8"
-          >
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="py-8"
+        >
             {/* Report Header */}
             <div className="text-center mb-8">
               <h1 className="heading-cinzel text-4xl text-neon-red mb-2">
@@ -212,7 +168,6 @@ export default function ReportPage() {
               </p>
             </motion.div>
           </motion.div>
-        )}
       </div>
     </div>
   );

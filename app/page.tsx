@@ -27,18 +27,14 @@ import {
   CHILDHOOD_SOUND_INFO,
   LOOP_PATTERN_INFO,
 } from '@/lib/types';
-import { cn, generateReportId, parseReportSections } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 import WizardStepComponent, { WizardNav } from '@/components/wizard/WizardStep';
 import SelectionCard, { SelectionGrid } from '@/components/wizard/SelectionCard';
 import FamilyBuilder from '@/components/wizard/FamilyBuilder';
 import FinalReview from '@/components/wizard/FinalReview';
 import TerminalLogs, { MatrixRain } from '@/components/processing/TerminalLogs';
-import DossierHeader from '@/components/report/DossierHeader';
-import ReportSection, { TypewriterContent } from '@/components/report/ReportSection';
-import PaywallOverlay from '@/components/report/PaywallOverlay';
 import GlitchText, { ScrambleText } from '@/components/ui/GlitchText';
-import CyberButton from '@/components/ui/CyberButton';
 
 const TOTAL_STEPS = 9; // Updated v2.0: gender, age, family, father, mother, conflict, mask, sound, loop
 
@@ -55,17 +51,12 @@ export default function HomePage() {
   });
 
   // Report state
-  const [reportId] = useState(generateReportId());
-  const [isUnlocked, setIsUnlocked] = useState(true); // DEV: Always unlocked
-  const [showReport, setShowReport] = useState(false);
+  const [caseId, setCaseId] = useState<string | null>(null);
 
   // AI completion hook
   const { completion, complete, isLoading } = useCompletion({
     api: '/api/analyze',
   });
-
-  // Parse sections from completion
-  const sections = completion ? parseReportSections(completion) : null;
 
   // Navigation handlers
   const canProceed = () => {
@@ -119,12 +110,10 @@ export default function HomePage() {
 
   // Handle processing complete
   const handleProcessingComplete = async () => {
-    // Call the AI API
-    await complete('', {
-      body: { profile: profile as UserProfile },
-    });
-    setShowReport(true);
-    setCurrentStep('report');
+    // AI generation is complete, navigate to persistent URL
+    if (caseId) {
+      router.push(`/report/${caseId}`);
+    }
   };
 
   // Intro animation
@@ -483,9 +472,19 @@ export default function HomePage() {
               profile={profile as UserProfile}
               onConfirm={async () => {
                 // Create database record and get case ID
-                const caseId = await createReport(profile as UserProfile);
-                // Navigate to persistent URL
-                router.push(`/report/${caseId}`);
+                const newCaseId = await createReport(profile as UserProfile);
+                setCaseId(newCaseId);
+
+                // Enter processing state (stay on this page)
+                setCurrentStep('processing');
+
+                // Call AI API with caseId
+                await complete('', {
+                  body: {
+                    profile: profile as UserProfile,
+                    caseId: newCaseId
+                  },
+                });
               }}
               onBack={prevStep}
             />
@@ -511,90 +510,6 @@ export default function HomePage() {
                 </p>
               </div>
               <TerminalLogs onComplete={handleProcessingComplete} />
-            </motion.div>
-          )}
-
-          {/* Report Screen */}
-          {currentStep === 'report' && showReport && (
-            <motion.div
-              key="report"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="py-8"
-            >
-              {/* Report Header */}
-              <div className="text-center mb-8">
-                <h1 className="heading-cinzel text-4xl text-neon-red mb-2">
-                  SOUL AUTOPSY REPORT
-                </h1>
-                <p className="chinese-serif text-2xl text-ghost-white/80">
-                  灵魂解剖报告
-                </p>
-              </div>
-
-              {/* Dossier Header with Case ID and Subject Data */}
-              <DossierHeader reportId={reportId} profile={profile as UserProfile} />
-
-              {/* Section 1: Mirror Projection (Free) */}
-              <ReportSection
-                id="mirror"
-                title="THE MIRROR PROJECTION"
-                titleCn="镜像投射"
-                content={sections?.mirror || ''}
-                index={0}
-              />
-
-              {/* Section 2: Origin Trace (Partially Locked) */}
-              <div className="relative">
-                <ReportSection
-                  id="origin"
-                  title="THE ORIGIN TRACE"
-                  titleCn="病灶溯源"
-                  content={sections?.origin || ''}
-                  isBlurred={!isUnlocked}
-                  index={1}
-                />
-              </div>
-
-              {/* Section 3: Fatal Simulation (Locked) */}
-              <div className="relative">
-                <ReportSection
-                  id="fatal-simulation"
-                  title="THE FATAL SIMULATION"
-                  titleCn="宿命终局"
-                  content={sections?.fatalSimulation || ''}
-                  isLocked={!isUnlocked}
-                  isBlurred={!isUnlocked}
-                  index={2}
-                />
-              </div>
-
-              {/* Paywall */}
-              {!isUnlocked && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="mt-8"
-                >
-                  <PaywallOverlay onUnlock={() => setIsUnlocked(true)} />
-                </motion.div>
-              )}
-
-              {/* Footer */}
-              <motion.div
-                className="mt-12 pt-8 border-t border-border-harsh text-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1 }}
-              >
-                <p className="font-mono text-xs text-ghost-white/30">
-                  THE MIRROR v0.8.21 | 命运矩阵 | {new Date().toISOString()}
-                </p>
-                <p className="mt-2 font-mono text-xs text-ghost-white/20">
-                  "The truth will set you free, but first it will piss you off."
-                </p>
-              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>

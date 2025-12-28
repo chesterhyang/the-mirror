@@ -15,6 +15,20 @@ const supabase = createClient(
 );
 
 async function checkReport() {
+  // Check specific report
+  const { data: specific, error: err1 } = await supabase
+    .from('soul_reports')
+    .select('*')
+    .eq('short_code', 'MR-MJPD0FSL-QCJD')
+    .single();
+
+  if (!err1 && specific) {
+    console.log('\n=== MR-MJPD0FSL-QCJD 详情 ===');
+    console.log('ai_response length:', specific.ai_response?.length || 0);
+    console.log('ai_response content:\n', specific.ai_response || 'EMPTY');
+  }
+
+  // Check latest 3
   const { data, error } = await supabase
     .from('soul_reports')
     .select('short_code, ai_response, created_at')
@@ -24,7 +38,7 @@ async function checkReport() {
   if (error) {
     console.error('Error:', error);
   } else {
-    console.log('\n最新3条记录:');
+    console.log('\n\n最新3条记录:');
     data.forEach((row, idx) => {
       console.log(`\n${idx + 1}. Case ID: ${row.short_code}`);
       console.log(`   Created: ${row.created_at}`);

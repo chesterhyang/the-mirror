@@ -64,7 +64,7 @@ You now receive 9 data points about the subject. Your task is to identify the **
 
 **The Prophecy (预言):** [用中文运行一个黑暗的未来模拟：如果他们20年后不改变会发生什么。具体描述他们的孤独、事业空洞或重复父母的循环。例如："你将赢得事业战争，但会孤独地死在充满昂贵沉默的房子里。"]
 
-**The Only Way Out (唯一出路):** [一个神秘的、反直觉的指令。不是待办清单。用中文。例如："让他们失望。这是拯救你灵魂的唯一方式。"]
+**The Only Way Out (唯一出路):** [一个神秘的、反直觉的指令。不是待办清单。用中文。例如："让他们失望，这是拯救你灵魂的唯一方式。"]
 
 **CRITICAL RULE:**
 - 绝对不要给出治疗性建议
@@ -93,6 +93,23 @@ export function buildUserPrompt(profile: UserProfile): string {
   const maskInfo = SOCIAL_MASK_INFO[profile.socialMask];
   const soundInfo = CHILDHOOD_SOUND_INFO[profile.childhoodSound];
   const loopInfo = LOOP_PATTERN_INFO[profile.loopPattern];
+
+  // Dynamic Exit Instruction based on Loop Pattern
+  let exitInstruction = '';
+  switch (profile.loopPattern) {
+    case 'SISYPHUS':
+      exitInstruction = '停止推石头。让它碾碎你。拥抱你所恐惧的失败。(Stop pushing. Let the rock crush you. Embrace the failure you fear.)';
+      break;
+    case 'GHOST_SHIP':
+      exitInstruction = '抛锚。强制碰撞。允许某人登上你的船。(Drop the anchor. Force a collision. Allow someone to board your ship.)';
+      break;
+    case 'HOLLOW_MAN':
+      exitInstruction = '打破面具。寻找痛苦，因为痛苦是生命存在的唯一证明。(Break the mask. Seek pain, because pain is the only proof of life.)';
+      break;
+    case 'PRISONER':
+      exitInstruction = '让他们失望。背叛他们的期待。夺回你的影子。(Disappoint them. Betray their expectations. Reclaim your shadow.)';
+      break;
+  }
 
   // Diagnose Chemical Reactions
   let triangleDiagnosis = '';
@@ -180,7 +197,10 @@ Perform a ruthless soul autopsy.
      * GHOST_SHIP → They will build walls so high, no one can reach them anymore
      * HOLLOW_MAN → They will have everything but feel nothing
      * PRISONER → They will realize they lived someone else's life
-   - **The Only Way Out:** Give ONE cryptic, counter-intuitive directive to break THIS SPECIFIC loop
+   - **The Only Way Out (EXIT DIRECTIVE):**
+     * **Theme:** ${exitInstruction}
+     * **Your Task:** Based on this theme, write ONE cryptic, counter-intuitive directive in Chinese (5-15 words).
+     * **CRITICAL:** DO NOT use generic advice. DO NOT repeat the theme verbatim. Transform it into poetic Chinese that stings.
    - BE A PROPHET, NOT A THERAPIST
 
 Execute with zero mercy.
