@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCompletion } from 'ai/react';
-import { User, UserCircle2, Clock, Users, Brain, Target, Scan } from 'lucide-react';
+import { User, UserCircle2, Clock, Users, Brain, Target, Scan, Mountain, Anchor, ScanFace, Lock } from 'lucide-react';
 import { createReport } from '@/app/actions';
 
 import {
@@ -440,23 +440,33 @@ export default function HomePage() {
             isActive={currentStep === 'loop'}
           >
             <SelectionGrid columns={2}>
-              {(Object.keys(LOOP_PATTERN_INFO) as LoopPattern[]).map((loop, index) => (
-                <SelectionCard
-                  key={loop}
-                  value={loop}
-                  label={LOOP_PATTERN_INFO[loop].en}
-                  labelCn={LOOP_PATTERN_INFO[loop].cn}
-                  descriptionCn={LOOP_PATTERN_INFO[loop].description}
-                  icon={<Target className="w-6 h-6" />}
-                  isSelected={profile.loopPattern === loop}
-                  onClick={(v) => {
-                    setProfile(p => ({ ...p, loopPattern: v }));
-                    // Go to review step instead of auto-submitting
-                    setTimeout(() => setCurrentStep('review'), 400);
-                  }}
-                  index={index}
-                />
-              ))}
+              {(Object.keys(LOOP_PATTERN_INFO) as LoopPattern[]).map((loop, index) => {
+                // Dynamic icon mapping
+                const iconName = LOOP_PATTERN_INFO[loop].icon;
+                let IconComponent = Target; // Default
+                if (iconName === 'Mountain') IconComponent = Mountain;
+                if (iconName === 'Anchor') IconComponent = Anchor;
+                if (iconName === 'ScanFace') IconComponent = ScanFace;
+                if (iconName === 'Lock') IconComponent = Lock;
+
+                return (
+                  <SelectionCard
+                    key={loop}
+                    value={loop}
+                    label={LOOP_PATTERN_INFO[loop].en}
+                    labelCn={LOOP_PATTERN_INFO[loop].cn}
+                    descriptionCn={LOOP_PATTERN_INFO[loop].description}
+                    icon={<IconComponent className="w-8 h-8" />}
+                    isSelected={profile.loopPattern === loop}
+                    onClick={(v) => {
+                      setProfile(p => ({ ...p, loopPattern: v }));
+                      // Go to review step instead of auto-submitting
+                      setTimeout(() => setCurrentStep('review'), 400);
+                    }}
+                    index={index}
+                  />
+                );
+              })}
             </SelectionGrid>
             <WizardNav
               onBack={prevStep}

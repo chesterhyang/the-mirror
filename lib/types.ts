@@ -230,26 +230,30 @@ export const CHILDHOOD_SOUND_INFO: Record<ChildhoodSound, { cn: string; en: stri
   }
 };
 
-export const LOOP_PATTERN_INFO: Record<LoopPattern, { cn: string; en: string; description: string }> = {
+export const LOOP_PATTERN_INFO: Record<LoopPattern, { cn: string; en: string; description: string; icon: string }> = {
   SISYPHUS: {
-    cn: '西西弗斯之刑 (The Sisyphus)',
+    cn: '西西弗斯之刑',
     en: 'The Sisyphus Loop',
-    description: '推石上山，永无止境。你以为登顶就能休息，但恐惧鞭策你不能停。'
+    description: '只要停下来，我就觉得自己是废物。成就感是我唯一的止痛药。',
+    icon: 'Mountain' // 登山/努力
   },
   GHOST_SHIP: {
-    cn: '幽灵船航线 (The Ghost Ship)',
+    cn: '幽灵船航线',
     en: 'The Ghost Ship Loop',
-    description: '在渴望连接与恐惧吞噬之间徘徊。越在乎，越推开。'
+    description: '我渴望亲密，但只要有人真的靠近，我的第一反应是逃跑。',
+    icon: 'Anchor' // 船锚/孤立
   },
   HOLLOW_MAN: {
-    cn: '空心人综合症 (The Hollow Man)',
+    cn: '空心人综合症',
     en: 'The Hollow Man Loop',
-    description: '除了面具，里面空无一物。你感觉不到活着的实感。'
+    description: '我在外人眼中极其完美，但在独处时，我感受不到任何活着的实感。',
+    icon: 'ScanFace' // 面具/空洞
   },
   PRISONER: {
-    cn: '完美囚徒 (The Prisoner)',
+    cn: '完美囚徒',
     en: 'The Prisoner Loop',
-    description: '你的整个人生都是为了让别人满意。你并不存在。'
+    description: '如果没有别人的许可或赞赏，我甚至不知道该如何度过这一天。',
+    icon: 'Lock' // 锁/监狱
   }
 };
 
