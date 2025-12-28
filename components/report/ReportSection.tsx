@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 import { Lock, Eye, EyeOff } from 'lucide-react';
 
@@ -62,11 +64,26 @@ export default function ReportSection({
         {/* Content */}
         <div
           className={cn(
-            'chinese-serif text-lg leading-relaxed text-ghost-white/90 whitespace-pre-wrap',
+            'chinese-serif text-lg leading-relaxed text-ghost-white/90',
             isBlurred && 'blur-lock'
           )}
         >
-          {content}
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              p: ({ children }) => <p className="mb-4">{children}</p>,
+              strong: ({ children }) => <strong className="text-neon-red font-bold">{children}</strong>,
+              em: ({ children }) => <em className="text-terminal-green italic">{children}</em>,
+              ul: ({ children }) => <ul className="list-disc list-inside mb-4 space-y-2">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal list-inside mb-4 space-y-2">{children}</ol>,
+              li: ({ children }) => <li className="text-ghost-white/80">{children}</li>,
+              h1: ({ children }) => <h1 className="text-2xl font-bold text-terminal-green mb-4">{children}</h1>,
+              h2: ({ children }) => <h2 className="text-xl font-bold text-cyber-blue mb-3">{children}</h2>,
+              h3: ({ children }) => <h3 className="text-lg font-bold text-deep-purple mb-2">{children}</h3>,
+            }}
+          >
+            {content}
+          </ReactMarkdown>
         </div>
 
         {/* Blur overlay for locked sections */}
