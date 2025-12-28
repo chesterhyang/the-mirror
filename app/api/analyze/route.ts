@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     });
 
     // Convert to stream for useCompletion
-    const stream = OpenAIStream(response);
+    const stream = OpenAIStream(response as any);
     return new StreamingTextResponse(stream);
 
   } catch (error) {
