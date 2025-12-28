@@ -31,14 +31,14 @@ export default function FamilyBuilder({ value, onChange }: FamilyBuilderProps) {
 
   const addOlderSibling = (gender: SiblingGender) => {
     const role: FamilyRole = gender === 'Brother' ? 'Older Brother' : 'Older Sister';
-    const newSiblings = [...olderSiblings, role, 'Me', ...youngerSiblings];
+    const newSiblings: FamilyRole[] = [...olderSiblings, role, 'Me' as FamilyRole, ...youngerSiblings];
     onChange(newSiblings);
     setShowOlderMenu(false);
   };
 
   const addYoungerSibling = (gender: SiblingGender) => {
     const role: FamilyRole = gender === 'Brother' ? 'Younger Brother' : 'Younger Sister';
-    const newSiblings = [...olderSiblings, 'Me', role, ...youngerSiblings];
+    const newSiblings: FamilyRole[] = [...olderSiblings, 'Me' as FamilyRole, role, ...youngerSiblings];
     onChange(newSiblings);
     setShowYoungerMenu(false);
   };

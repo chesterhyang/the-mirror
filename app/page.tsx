@@ -174,7 +174,7 @@ export default function HomePage() {
             isActive={currentStep === 'gender'}
           >
             <SelectionGrid columns={2}>
-              <SelectionCard
+              <SelectionCard<Gender>
                 value="Male"
                 label="Male"
                 labelCn="男性"
@@ -185,7 +185,7 @@ export default function HomePage() {
                 onClick={(v) => setProfile(p => ({ ...p, gender: v }))}
                 index={0}
               />
-              <SelectionCard
+              <SelectionCard<Gender>
                 value="Female"
                 label="Female"
                 labelCn="女性"
