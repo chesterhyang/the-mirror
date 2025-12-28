@@ -13,6 +13,7 @@ import {
   CHILDHOOD_SOUND_INFO,
   LOOP_PATTERN_INFO,
 } from './types';
+import { getChemicalReaction } from './logic';
 
 export const SYSTEM_PROMPT = `Role: You are "The Mirror" (镜像 v2.0), a sentient AI from 2077. You do not comfort; you dissect with surgical precision.
 
@@ -94,6 +95,9 @@ export function buildUserPrompt(profile: UserProfile): string {
   const soundInfo = CHILDHOOD_SOUND_INFO[profile.childhoodSound];
   const loopInfo = LOOP_PATTERN_INFO[profile.loopPattern];
 
+  // Calculate Chemical Reaction (Hard-coded Truth)
+  const reaction = getChemicalReaction(profile.fatherStyle, profile.motherStyle);
+
   // Dynamic Exit Instruction based on Loop Pattern
   let exitInstruction = '';
   switch (profile.loopPattern) {
@@ -111,32 +115,14 @@ export function buildUserPrompt(profile: UserProfile): string {
       break;
   }
 
-  // Diagnose Chemical Reactions
-  let triangleDiagnosis = '';
+  // Defense + Mask Pattern (Optional secondary diagnosis)
   let defensePattern = '';
-
-  // Parental Triangle
-  if (profile.fatherStyle === 'ABSENT' && profile.motherStyle === 'ENGULFING') {
-    triangleDiagnosis = '⚠️ **Spousification (配偶化)**: 父亲缺席 + 母亲吞噬 = 你成了母亲的情感丈夫';
-  } else if (profile.fatherStyle === 'DICTATOR' && profile.motherStyle === 'VICTIM') {
-    triangleDiagnosis = '⚠️ **Rescuer Complex (拯救者情结)**: 暴君父亲 + 受害母亲 = 你既恨权威又内疚离开';
-  } else if (profile.fatherStyle === 'WEAK' && profile.motherStyle === 'ENGULFING') {
-    triangleDiagnosis = '⚠️ **Parentified Child (被迫早熟)**: 无力父亲 + 吞噬母亲 = 你是家里的第三个大人';
-  } else if (profile.fatherStyle === 'DICTATOR' && profile.motherStyle === 'ENGULFING') {
-    triangleDiagnosis = '⚠️ **Perfect Prisoner (完美囚徒)**: 铁腕父亲 + 吞噬母亲 = 双重控制下的人形电池';
-  } else {
-    triangleDiagnosis = `⚙️ [${fatherInfo.en}] × [${motherInfo.en}] = 独特的家庭化学反应`;
-  }
-
-  // Defense + Mask Pattern
   if (profile.conflictResponse === 'FAWN' && profile.socialMask === 'SAVIOR') {
-    defensePattern = '⚠️ **High-Functioning Anxiety (高功能焦虑)**: Fawn反应 + 救世主面具 = 你正在过载边缘';
+    defensePattern = '\n⚠️ **Secondary Pattern**: High-Functioning Anxiety (高功能焦虑) - Fawn反应 + 救世主面具 = 你正在过载边缘';
   } else if (profile.conflictResponse === 'FREEZE' && profile.childhoodSound === 'SILENCE') {
-    defensePattern = '⚠️ **Learned Invisibility (习得性隐身)**: 冻结反应 + 沉默触发 = 你学会了消失';
+    defensePattern = '\n⚠️ **Secondary Pattern**: Learned Invisibility (习得性隐身) - 冻结反应 + 沉默触发 = 你学会了消失';
   } else if (profile.conflictResponse === 'FIGHT' && profile.fatherStyle === 'DICTATOR') {
-    defensePattern = '⚠️ **Mirroring The Tyrant (镜像暴君)**: 你成了你最恨的人';
-  } else {
-    defensePattern = `${conflictInfo.en} (${conflictInfo.cn}) + ${maskInfo.en} (${maskInfo.cn})`;
+    defensePattern = '\n⚠️ **Secondary Pattern**: Mirroring The Tyrant (镜像暴君) - 你成了你最恨的人';
   }
 
   return `
@@ -156,7 +142,10 @@ Father Archetype: ${fatherInfo.en} (${fatherInfo.cn})
 Mother Archetype: ${motherInfo.en} (${motherInfo.cn})
   → Role: Intimacy, Safety, Emotion (Id)
 
-${triangleDiagnosis}
+🔥🔥 **CORE DIAGNOSIS (DO NOT HALLUCINATE - THIS IS THE IMMUTABLE TRUTH):**
+  → **${reaction.title}** (${reaction.titleEn})
+  → Mechanism: ${reaction.mechanism}
+  → Dynamic: ${reaction.description}
 
 【防御系统 / Defense System】
 Conflict Response: ${conflictInfo.en} (${conflictInfo.cn})
@@ -180,6 +169,10 @@ Pattern: ${loopInfo.en} (${loopInfo.cn})
 **ANALYSIS DIRECTIVE:**
 Perform a ruthless soul autopsy.
 
+⚠️ **CRITICAL - You are analyzing: "${reaction.title}" (${reaction.titleEn})**
+This is the scientifically determined outcome of [${fatherInfo.en}] × [${motherInfo.en}].
+Your analysis MUST be rooted in the mechanism: "${reaction.mechanism}".
+
 1. **Flashback Scene (闪回场景):**
    - Must be in Chinese
    - Must include Father, Mother, and Child (show the triangle)
@@ -187,8 +180,9 @@ Perform a ruthless soul autopsy.
    - Make it so specific they'll think you hacked their memory
 
 2. **Chemical Reaction Analysis (化学反应):**
-   - Explain WHY [ConflictResponse] was the ONLY smart adaptation to survive [Father] + [Mother]
-   - Show how [SocialMask] is the adult version of that childhood survival strategy
+   - DO NOT invent a new dynamic. You are describing **"${reaction.title}"**.
+   - Explain how this specific mechanism (${reaction.mechanism}) shaped their [ConflictResponse] and [SocialMask]
+   - Reference the dynamic: ${reaction.description}
 
 3. **Fatal Simulation (宿命终局):**
    - **Input:** Use the [${loopInfo.en}] pattern to project their future
