@@ -34,22 +34,22 @@ export function splitTextForTypewriter(text: string, chunkSize: number = 1): str
 export function parseReportSections(text: string): {
   mirror: string;
   origin: string;
-  redPill: string;
+  fatalSimulation: string;
 } {
   const sections = {
     mirror: '',
     origin: '',
-    redPill: ''
+    fatalSimulation: ''
   };
 
   // Split by section headers
   const mirrorMatch = text.match(/【镜像投射】.*?\n([\s\S]*?)(?=【病灶溯源】|$)/);
-  const originMatch = text.match(/【病灶溯源】.*?\n([\s\S]*?)(?=【觉醒红药丸】|$)/);
-  const redPillMatch = text.match(/【觉醒红药丸】.*?\n([\s\S]*?)$/);
+  const originMatch = text.match(/【病灶溯源】.*?\n([\s\S]*?)(?=【宿命终局】|$)/);
+  const fatalSimulationMatch = text.match(/【宿命终局】.*?\n([\s\S]*?)$/);
 
   if (mirrorMatch) sections.mirror = mirrorMatch[1].trim();
   if (originMatch) sections.origin = originMatch[1].trim();
-  if (redPillMatch) sections.redPill = redPillMatch[1].trim();
+  if (fatalSimulationMatch) sections.fatalSimulation = fatalSimulationMatch[1].trim();
 
   return sections;
 }

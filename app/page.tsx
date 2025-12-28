@@ -9,13 +9,21 @@ import {
   Gender,
   LifeStage,
   FamilyRole,
-  ParentDynamics,
-  PainPoint,
+  FatherStyle,
+  MotherStyle,
+  ConflictResponse,
+  SocialMask,
+  ChildhoodSound,
+  LoopPattern,
   UserProfile,
   WizardStep,
   LIFE_STAGE_INFO,
-  PARENT_DYNAMICS_INFO,
-  PAIN_POINT_INFO,
+  FATHER_STYLE_INFO,
+  MOTHER_STYLE_INFO,
+  CONFLICT_RESPONSE_INFO,
+  SOCIAL_MASK_INFO,
+  CHILDHOOD_SOUND_INFO,
+  LOOP_PATTERN_INFO,
 } from '@/lib/types';
 import { cn, generateReportId, parseReportSections } from '@/lib/utils';
 
@@ -28,7 +36,7 @@ import PaywallOverlay from '@/components/report/PaywallOverlay';
 import GlitchText, { ScrambleText } from '@/components/ui/GlitchText';
 import CyberButton from '@/components/ui/CyberButton';
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 9; // Updated v2.0: gender, age, family, father, mother, conflict, mask, sound, loop
 
 export default function HomePage() {
   // Wizard state
@@ -59,14 +67,18 @@ export default function HomePage() {
       case 'gender': return !!profile.gender;
       case 'age': return !!profile.age;
       case 'family': return profile.siblings && profile.siblings.length >= 1;
-      case 'parents': return !!profile.parentDynamics;
-      case 'pain': return !!profile.painPoint;
+      case 'father': return !!profile.fatherStyle;
+      case 'mother': return !!profile.motherStyle;
+      case 'conflict': return !!profile.conflictResponse;
+      case 'mask': return !!profile.socialMask;
+      case 'sound': return !!profile.childhoodSound;
+      case 'loop': return !!profile.loopPattern;
       default: return false;
     }
   };
 
   const nextStep = () => {
-    const steps: WizardStep[] = ['gender', 'age', 'family', 'parents', 'pain'];
+    const steps: WizardStep[] = ['gender', 'age', 'family', 'father', 'mother', 'conflict', 'mask', 'sound', 'loop'];
     const currentIndex = steps.indexOf(currentStep);
     if (currentIndex < steps.length - 1) {
       setCurrentStep(steps[currentIndex + 1]);
@@ -78,12 +90,19 @@ export default function HomePage() {
   };
 
   const prevStep = () => {
-    const steps: WizardStep[] = ['gender', 'age', 'family', 'parents', 'pain'];
+    const steps: WizardStep[] = ['gender', 'age', 'family', 'father', 'mother', 'conflict', 'mask', 'sound', 'loop'];
     const currentIndex = steps.indexOf(currentStep);
     if (currentIndex > 0) {
       setCurrentStep(steps[currentIndex - 1]);
       setStepNumber(prev => prev - 1);
     }
+  };
+
+  // Auto-advance after selection (for smoother UX)
+  const selectAndAdvance = <T,>(key: keyof UserProfile, value: T) => {
+    setProfile(p => ({ ...p, [key]: value }));
+    // Auto-advance after a brief delay
+    setTimeout(() => nextStep(), 400);
   };
 
   // Handle processing complete
@@ -182,7 +201,7 @@ export default function HomePage() {
                 descriptionCn="睾酮驱动的存在"
                 icon={<User className="w-6 h-6" />}
                 isSelected={profile.gender === 'Male'}
-                onClick={(v) => setProfile(p => ({ ...p, gender: v }))}
+                onClick={(v) => selectAndAdvance('gender', v)}
                 index={0}
               />
               <SelectionCard<Gender>
@@ -193,7 +212,7 @@ export default function HomePage() {
                 descriptionCn="雌激素塑造的生命"
                 icon={<UserCircle2 className="w-6 h-6" />}
                 isSelected={profile.gender === 'Female'}
-                onClick={(v) => setProfile(p => ({ ...p, gender: v }))}
+                onClick={(v) => selectAndAdvance('gender', v)}
                 index={1}
               />
             </SelectionGrid>
@@ -218,12 +237,12 @@ export default function HomePage() {
                 <SelectionCard
                   key={stage}
                   value={stage}
-                  label={stage}
+                  label={LIFE_STAGE_INFO[stage].en}
                   labelCn={LIFE_STAGE_INFO[stage].cn}
                   descriptionCn={LIFE_STAGE_INFO[stage].description}
                   icon={<Clock className="w-6 h-6" />}
                   isSelected={profile.age === stage}
-                  onClick={(v) => setProfile(p => ({ ...p, age: v }))}
+                  onClick={(v) => selectAndAdvance('age', v)}
                   index={index}
                 />
               ))}
@@ -255,26 +274,26 @@ export default function HomePage() {
             />
           </WizardStepComponent>
 
-          {/* Step 4: Parent Dynamics */}
+          {/* Step 4: Father Archetype */}
           <WizardStepComponent
             stepNumber={4}
             totalSteps={TOTAL_STEPS}
-            title="PARENTAL_VIRUS"
-            titleCn="父母模式"
-            subtitle="Which operating system were you installed with?"
-            isActive={currentStep === 'parents'}
+            title="FATHER_ARCHETYPE"
+            titleCn="父亲原型"
+            subtitle="Authority, career, self-worth — the super-ego"
+            isActive={currentStep === 'father'}
           >
-            <SelectionGrid columns={1}>
-              {(Object.keys(PARENT_DYNAMICS_INFO) as ParentDynamics[]).map((dynamic, index) => (
+            <SelectionGrid columns={2}>
+              {(Object.keys(FATHER_STYLE_INFO) as FatherStyle[]).map((style, index) => (
                 <SelectionCard
-                  key={dynamic}
-                  value={dynamic}
-                  label={dynamic}
-                  labelCn={PARENT_DYNAMICS_INFO[dynamic].cn}
-                  descriptionCn={PARENT_DYNAMICS_INFO[dynamic].description}
-                  icon={<Users className="w-6 h-6" />}
-                  isSelected={profile.parentDynamics === dynamic}
-                  onClick={(v) => setProfile(p => ({ ...p, parentDynamics: v }))}
+                  key={style}
+                  value={style}
+                  label={FATHER_STYLE_INFO[style].en}
+                  labelCn={FATHER_STYLE_INFO[style].cn}
+                  descriptionCn={FATHER_STYLE_INFO[style].description}
+                  icon={<User className="w-6 h-6" />}
+                  isSelected={profile.fatherStyle === style}
+                  onClick={(v) => selectAndAdvance('fatherStyle', v)}
                   index={index}
                 />
               ))}
@@ -286,26 +305,154 @@ export default function HomePage() {
             />
           </WizardStepComponent>
 
-          {/* Step 5: Pain Point */}
+          {/* Step 5: Mother Archetype */}
           <WizardStepComponent
             stepNumber={5}
             totalSteps={TOTAL_STEPS}
-            title="PAIN_VECTOR"
-            titleCn="痛点定位"
-            subtitle="Where does the wound manifest?"
-            isActive={currentStep === 'pain'}
+            title="MOTHER_ARCHETYPE"
+            titleCn="母亲原型"
+            subtitle="Intimacy, safety, emotion — the id"
+            isActive={currentStep === 'mother'}
           >
-            <SelectionGrid columns={1}>
-              {(Object.keys(PAIN_POINT_INFO) as PainPoint[]).map((pain, index) => (
+            <SelectionGrid columns={2}>
+              {(Object.keys(MOTHER_STYLE_INFO) as MotherStyle[]).map((style, index) => (
                 <SelectionCard
-                  key={pain}
-                  value={pain}
-                  label={pain}
-                  labelCn={PAIN_POINT_INFO[pain].cn}
-                  descriptionCn={PAIN_POINT_INFO[pain].description}
+                  key={style}
+                  value={style}
+                  label={MOTHER_STYLE_INFO[style].en}
+                  labelCn={MOTHER_STYLE_INFO[style].cn}
+                  descriptionCn={MOTHER_STYLE_INFO[style].description}
+                  icon={<UserCircle2 className="w-6 h-6" />}
+                  isSelected={profile.motherStyle === style}
+                  onClick={(v) => selectAndAdvance('motherStyle', v)}
+                  index={index}
+                />
+              ))}
+            </SelectionGrid>
+            <WizardNav
+              onBack={prevStep}
+              onNext={nextStep}
+              canGoNext={canProceed()}
+            />
+          </WizardStepComponent>
+
+          {/* Step 6: Conflict Response */}
+          <WizardStepComponent
+            stepNumber={6}
+            totalSteps={TOTAL_STEPS}
+            title="CONFLICT_PROTOCOL"
+            titleCn="冲突反应"
+            subtitle="When danger approaches, how do you respond?"
+            isActive={currentStep === 'conflict'}
+          >
+            <SelectionGrid columns={2}>
+              {(Object.keys(CONFLICT_RESPONSE_INFO) as ConflictResponse[]).map((response, index) => (
+                <SelectionCard
+                  key={response}
+                  value={response}
+                  label={CONFLICT_RESPONSE_INFO[response].en}
+                  labelCn={CONFLICT_RESPONSE_INFO[response].cn}
+                  descriptionCn={CONFLICT_RESPONSE_INFO[response].description}
+                  icon={<Brain className="w-6 h-6" />}
+                  isSelected={profile.conflictResponse === response}
+                  onClick={(v) => selectAndAdvance('conflictResponse', v)}
+                  index={index}
+                />
+              ))}
+            </SelectionGrid>
+            <WizardNav
+              onBack={prevStep}
+              onNext={nextStep}
+              canGoNext={canProceed()}
+            />
+          </WizardStepComponent>
+
+          {/* Step 7: Social Mask */}
+          <WizardStepComponent
+            stepNumber={7}
+            totalSteps={TOTAL_STEPS}
+            title="SOCIAL_MASK"
+            titleCn="社交面具"
+            subtitle="The persona you show the world"
+            isActive={currentStep === 'mask'}
+          >
+            <SelectionGrid columns={2}>
+              {(Object.keys(SOCIAL_MASK_INFO) as SocialMask[]).map((mask, index) => (
+                <SelectionCard
+                  key={mask}
+                  value={mask}
+                  label={SOCIAL_MASK_INFO[mask].en}
+                  labelCn={SOCIAL_MASK_INFO[mask].cn}
+                  descriptionCn={SOCIAL_MASK_INFO[mask].description}
+                  icon={<Users className="w-6 h-6" />}
+                  isSelected={profile.socialMask === mask}
+                  onClick={(v) => selectAndAdvance('socialMask', v)}
+                  index={index}
+                />
+              ))}
+            </SelectionGrid>
+            <WizardNav
+              onBack={prevStep}
+              onNext={nextStep}
+              canGoNext={canProceed()}
+            />
+          </WizardStepComponent>
+
+          {/* Step 8: Childhood Sound */}
+          <WizardStepComponent
+            stepNumber={8}
+            totalSteps={TOTAL_STEPS}
+            title="TRAUMA_TRIGGER"
+            titleCn="童年声音"
+            subtitle="The sound that still makes your nervous system freeze"
+            isActive={currentStep === 'sound'}
+          >
+            <SelectionGrid columns={2}>
+              {(Object.keys(CHILDHOOD_SOUND_INFO) as ChildhoodSound[]).map((sound, index) => (
+                <SelectionCard
+                  key={sound}
+                  value={sound}
+                  label={CHILDHOOD_SOUND_INFO[sound].en}
+                  labelCn={CHILDHOOD_SOUND_INFO[sound].cn}
+                  descriptionCn={CHILDHOOD_SOUND_INFO[sound].description}
                   icon={<Target className="w-6 h-6" />}
-                  isSelected={profile.painPoint === pain}
-                  onClick={(v) => setProfile(p => ({ ...p, painPoint: v }))}
+                  isSelected={profile.childhoodSound === sound}
+                  onClick={(v) => selectAndAdvance('childhoodSound', v)}
+                  index={index}
+                />
+              ))}
+            </SelectionGrid>
+            <WizardNav
+              onBack={prevStep}
+              onNext={nextStep}
+              canGoNext={canProceed()}
+            />
+          </WizardStepComponent>
+
+          {/* Step 9: The Infinite Loop */}
+          <WizardStepComponent
+            stepNumber={9}
+            totalSteps={TOTAL_STEPS}
+            title="THE_INFINITE_LOOP"
+            titleCn="系统死循环"
+            subtitle="What psychological prison are you trapped in?"
+            isActive={currentStep === 'loop'}
+          >
+            <SelectionGrid columns={2}>
+              {(Object.keys(LOOP_PATTERN_INFO) as LoopPattern[]).map((loop, index) => (
+                <SelectionCard
+                  key={loop}
+                  value={loop}
+                  label={LOOP_PATTERN_INFO[loop].en}
+                  labelCn={LOOP_PATTERN_INFO[loop].cn}
+                  descriptionCn={LOOP_PATTERN_INFO[loop].description}
+                  icon={<Target className="w-6 h-6" />}
+                  isSelected={profile.loopPattern === loop}
+                  onClick={(v) => {
+                    setProfile(p => ({ ...p, loopPattern: v }));
+                    // Last step - auto-submit after brief delay
+                    setTimeout(() => setCurrentStep('processing'), 600);
+                  }}
                   index={index}
                 />
               ))}
@@ -369,7 +516,7 @@ export default function HomePage() {
                     sections: {sections ? 'parsed' : 'null'}<br/>
                     mirror: {sections?.mirror?.length || 0} chars<br/>
                     origin: {sections?.origin?.length || 0} chars<br/>
-                    redPill: {sections?.redPill?.length || 0} chars<br/>
+                    fatalSimulation: {sections?.fatalSimulation?.length || 0} chars<br/>
                     raw: {completion?.substring(0, 100) || 'empty'}
                   </div>
                 </div>
@@ -396,13 +543,13 @@ export default function HomePage() {
                 />
               </div>
 
-              {/* Section 3: Red Pill (Locked) */}
+              {/* Section 3: Fatal Simulation (Locked) */}
               <div className="relative">
                 <ReportSection
-                  id="redpill"
-                  title="THE RED PILL AWAKENING"
-                  titleCn="觉醒红药丸"
-                  content={sections?.redPill || ''}
+                  id="fatal-simulation"
+                  title="THE FATAL SIMULATION"
+                  titleCn="宿命终局"
+                  content={sections?.fatalSimulation || ''}
                   isLocked={!isUnlocked}
                   isBlurred={!isUnlocked}
                   index={2}

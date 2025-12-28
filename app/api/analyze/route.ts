@@ -2,6 +2,8 @@ import OpenAI from 'openai';
 import { OpenAIStream, StreamingTextResponse } from 'ai';
 import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/prompts';
 import { UserProfile } from '@/lib/types';
+import { getSupabaseServer } from '@/lib/supabase';
+import { generateReportId } from '@/lib/utils';
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -16,18 +18,24 @@ export async function POST(req: Request) {
     const body = await req.json();
     const profile: UserProfile = body.profile;
 
-    // Validate the profile
-    if (!profile || !profile.gender || !profile.age || !profile.siblings || !profile.parentDynamics || !profile.painPoint) {
+    // Validate the profile (v2.0)
+    if (!profile || !profile.gender || !profile.age || !profile.siblings ||
+        !profile.fatherStyle || !profile.motherStyle ||
+        !profile.conflictResponse || !profile.socialMask || !profile.childhoodSound ||
+        !profile.loopPattern) {
       return new Response(
-        JSON.stringify({ error: 'Invalid profile data' }),
+        JSON.stringify({ error: 'Invalid profile data - missing required fields' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
+    // Generate short code for this report
+    const shortCode = generateReportId();
+
     // Build the user prompt
     const userPrompt = buildUserPrompt(profile);
 
-    // Call OpenAI API
+    // Call OpenAI API with streaming
     const response = await openaiClient.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -39,9 +47,42 @@ export async function POST(req: Request) {
       stream: true,
     });
 
-    // Convert to stream for useCompletion
+    // Collect the full response while streaming
+    let fullText = '';
+
+    const transformStream = new TransformStream({
+      transform(chunk, controller) {
+        // Decode and accumulate
+        const text = new TextDecoder().decode(chunk);
+        fullText += text;
+        // Forward to client
+        controller.enqueue(chunk);
+      },
+      flush() {
+        // Save to Supabase after streaming completes
+        const supabase = getSupabaseServer();
+        supabase
+          .from('soul_reports')
+          .insert({
+            short_code: shortCode,
+            profile: profile,
+            ai_response: fullText,
+          })
+          .then(({ error }) => {
+            if (error) {
+              console.error('Supabase error:', error);
+            } else {
+              console.log('✅ Report saved:', shortCode, `(${fullText.length} chars)`);
+            }
+          });
+      },
+    });
+
+    // Convert to stream and pipe through transformer
     const stream = OpenAIStream(response as any);
-    return new StreamingTextResponse(stream);
+    const pipedStream = stream.pipeThrough(transformStream);
+
+    return new StreamingTextResponse(pipedStream);
 
   } catch (error) {
     console.error('Analysis API error:', error);
