@@ -9,6 +9,7 @@ import {
   MOTHER_STYLE_INFO,
   CONFLICT_RESPONSE_INFO,
   SOCIAL_MASK_INFO,
+  CHILDHOOD_SOUND_INFO,
   LOOP_PATTERN_INFO,
 } from '@/lib/types';
 
@@ -93,15 +94,18 @@ export default function DossierHeader({ reportId, profile }: DossierHeaderProps)
           </div>
 
           <div className="flex">
+            <span className="w-48 text-terminal-green/80 shrink-0">SENSORY_TRIGGER:</span>
+            <span className="text-ghost-white/90">
+              {CHILDHOOD_SOUND_INFO[profile.childhoodSound].en} ({CHILDHOOD_SOUND_INFO[profile.childhoodSound].cn})
+            </span>
+          </div>
+
+          <div className="flex">
             <span className="w-48 text-terminal-green/80 shrink-0">CORE_LOOP:</span>
             <span className="text-neon-red/90 font-bold">
               {LOOP_PATTERN_INFO[profile.loopPattern].en}
             </span>
           </div>
-        </div>
-
-        <div className="mt-4 pt-3 border-t border-terminal-green/10 font-mono text-xs text-ghost-white/30 text-center">
-          Chemical Reaction Analysis: {FATHER_STYLE_INFO[profile.fatherStyle].en} × {MOTHER_STYLE_INFO[profile.motherStyle].en}
         </div>
       </div>
 
