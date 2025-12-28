@@ -30,7 +30,9 @@ import { cn, generateReportId, parseReportSections } from '@/lib/utils';
 import WizardStepComponent, { WizardNav } from '@/components/wizard/WizardStep';
 import SelectionCard, { SelectionGrid } from '@/components/wizard/SelectionCard';
 import FamilyBuilder from '@/components/wizard/FamilyBuilder';
+import FinalReview from '@/components/wizard/FinalReview';
 import TerminalLogs, { MatrixRain } from '@/components/processing/TerminalLogs';
+import DossierHeader from '@/components/report/DossierHeader';
 import ReportSection, { TypewriterContent } from '@/components/report/ReportSection';
 import PaywallOverlay from '@/components/report/PaywallOverlay';
 import GlitchText, { ScrambleText } from '@/components/ui/GlitchText';
@@ -90,6 +92,12 @@ export default function HomePage() {
   };
 
   const prevStep = () => {
+    // Special handling for review step
+    if (currentStep === 'review') {
+      setCurrentStep('loop');
+      return;
+    }
+
     const steps: WizardStep[] = ['gender', 'age', 'family', 'father', 'mother', 'conflict', 'mask', 'sound', 'loop'];
     const currentIndex = steps.indexOf(currentStep);
     if (currentIndex > 0) {
@@ -163,7 +171,7 @@ export default function HomePage() {
       {/* Main Container */}
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
-        {currentStep !== 'processing' && currentStep !== 'report' && (
+        {currentStep !== 'processing' && currentStep !== 'report' && currentStep !== 'review' && (
           <motion.header
             className="text-center mb-12"
             initial={{ opacity: 0, y: -20 }}
@@ -450,8 +458,8 @@ export default function HomePage() {
                   isSelected={profile.loopPattern === loop}
                   onClick={(v) => {
                     setProfile(p => ({ ...p, loopPattern: v }));
-                    // Last step - auto-submit after brief delay
-                    setTimeout(() => setCurrentStep('processing'), 600);
+                    // Go to review step instead of auto-submitting
+                    setTimeout(() => setCurrentStep('review'), 400);
                   }}
                   index={index}
                 />
@@ -464,6 +472,15 @@ export default function HomePage() {
               isLastStep
             />
           </WizardStepComponent>
+
+          {/* Step 10: Final Review */}
+          {currentStep === 'review' && (
+            <FinalReview
+              profile={profile as UserProfile}
+              onConfirm={() => setCurrentStep('processing')}
+              onBack={prevStep}
+            />
+          )}
 
           {/* Processing Screen */}
           {currentStep === 'processing' && (
@@ -497,30 +514,17 @@ export default function HomePage() {
               className="py-8"
             >
               {/* Report Header */}
-              <div className="text-center mb-12 border-b border-border-harsh pb-8">
-                <div className="font-mono text-xs text-terminal-green mb-2">
-                  {'>'} REPORT ID: {reportId}
-                </div>
-                <h1 className="heading-cinzel text-3xl text-neon-red mb-4">
+              <div className="text-center mb-8">
+                <h1 className="heading-cinzel text-4xl text-neon-red mb-2">
                   SOUL AUTOPSY REPORT
                 </h1>
-                <p className="chinese-serif text-xl text-ghost-white/80">
+                <p className="chinese-serif text-2xl text-ghost-white/80">
                   灵魂解剖报告
                 </p>
-                {/* DEBUG */}
-                <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/50 text-left">
-                  <div className="font-mono text-xs text-yellow-500 mb-2">DEBUG INFO:</div>
-                  <div className="font-mono text-xs text-ghost-white/60">
-                    completion length: {completion?.length || 0}<br/>
-                    isLoading: {isLoading ? 'true' : 'false'}<br/>
-                    sections: {sections ? 'parsed' : 'null'}<br/>
-                    mirror: {sections?.mirror?.length || 0} chars<br/>
-                    origin: {sections?.origin?.length || 0} chars<br/>
-                    fatalSimulation: {sections?.fatalSimulation?.length || 0} chars<br/>
-                    raw: {completion?.substring(0, 100) || 'empty'}
-                  </div>
-                </div>
               </div>
+
+              {/* Dossier Header with Case ID and Subject Data */}
+              <DossierHeader reportId={reportId} profile={profile as UserProfile} />
 
               {/* Section 1: Mirror Projection (Free) */}
               <ReportSection

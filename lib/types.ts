@@ -73,7 +73,7 @@ export interface UserProfile {
   loopPattern: LoopPattern;
 }
 
-// Wizard steps (9 total)
+// Wizard steps (10 total: 9 data collection + 1 review)
 export type WizardStep =
   | 'gender'          // 1
   | 'age'             // 2
@@ -84,6 +84,7 @@ export type WizardStep =
   | 'mask'            // 7
   | 'sound'           // 8
   | 'loop'            // 9 - The Infinite Loop
+  | 'review'          // 10 - Final Seal / Confirmation
   | 'processing'
   | 'report';
 
