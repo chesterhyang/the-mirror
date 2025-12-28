@@ -17,7 +17,7 @@ export async function createReport(profile: UserProfile): Promise<string> {
     .insert({
       short_code: shortCode,
       profile: profile,
-      ai_response: null, // Will be filled after AI generation
+      ai_response: '', // Empty string initially, will be filled after AI generation
     });
 
   if (error) {

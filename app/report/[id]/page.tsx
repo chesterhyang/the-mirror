@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, notFound } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useCompletion } from 'ai/react';
@@ -28,6 +28,7 @@ export default function ReportPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUnlocked, setIsUnlocked] = useState(true); // DEV: Always unlocked
   const [needsGeneration, setNeedsGeneration] = useState(false);
+  const hasTriggeredGeneration = useRef(false); // Prevent duplicate API calls
 
   // AI completion hook
   const { completion, complete, isLoading: isGenerating } = useCompletion({
@@ -47,8 +48,8 @@ export default function ReportPage() {
         const data = await res.json();
         setReportData(data);
 
-        // If ai_response is null, we need to generate it
-        if (!data.ai_response) {
+        // If ai_response is empty, we need to generate it
+        if (!data.ai_response || data.ai_response === '') {
           setNeedsGeneration(true);
         }
       } catch (error) {
@@ -62,9 +63,10 @@ export default function ReportPage() {
     fetchReport();
   }, [caseId]);
 
-  // Auto-generate AI response if needed
+  // Auto-generate AI response if needed (only once)
   useEffect(() => {
-    if (needsGeneration && reportData && !isGenerating) {
+    if (needsGeneration && reportData && !hasTriggeredGeneration.current) {
+      hasTriggeredGeneration.current = true;
       // Trigger AI generation
       complete('', {
         body: {
@@ -72,9 +74,8 @@ export default function ReportPage() {
           caseId: caseId,
         },
       });
-      setNeedsGeneration(false);
     }
-  }, [needsGeneration, reportData, isGenerating, complete, caseId]);
+  }, [needsGeneration, reportData, complete, caseId]);
 
   // Parse sections from existing or streaming completion
   const displayText = reportData?.ai_response || completion;
@@ -101,7 +102,7 @@ export default function ReportPage() {
   }
 
   // Show processing animation if generating
-  const showProcessing = !reportData.ai_response && (needsGeneration || isGenerating);
+  const showProcessing = (!reportData.ai_response || reportData.ai_response === '') && (needsGeneration || isGenerating);
 
   return (
     <div className="min-h-screen bg-void relative overflow-hidden">
