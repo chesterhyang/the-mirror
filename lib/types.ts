@@ -88,20 +88,20 @@ export interface AnalyzeResponse {
 // Life stage descriptions for UI
 export const LIFE_STAGE_INFO: Record<LifeStage, { cn: string; description: string }> = {
   'Lost (18-25)': {
-    cn: '迷失期 (18-25)',
-    description: '身份探索，不知道自己是谁'
+    cn: '迷航期 (The Wandering)',
+    description: '在无数选择中寻找坐标 / Searching for coordinates in chaos'
   },
   'High Pressure (26-35)': {
-    cn: '高压期 (26-35)',
-    description: '事业冲刺，社会时钟的奴隶'
+    cn: '熔炉期 (The Forge)',
+    description: '高压锻造，重塑自我 / Under immense pressure to transform'
   },
   'Disillusioned (36-45)': {
-    cn: '幻灭期 (36-45)',
-    description: '中年危机，质疑一切选择'
+    cn: '幻灭期 (The Void)',
+    description: '旧神已死，新神未立 / The old illusions have crumbled'
   },
   'Reconciled (45+)': {
-    cn: '和解期 (45+)',
-    description: '寻求意义，与过去握手言和'
+    cn: '重构期 (The Rebirth)',
+    description: '与命运和解，或再次宣战 / Reconciling with or raging against fate'
   }
 };
 
