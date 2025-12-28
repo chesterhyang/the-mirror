@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCompletion } from 'ai/react';
 import { User, UserCircle2, Clock, Users, Brain, Target, Scan } from 'lucide-react';
+import { createReport } from '@/app/actions';
 
 import {
   Gender,
@@ -41,6 +43,8 @@ import CyberButton from '@/components/ui/CyberButton';
 const TOTAL_STEPS = 9; // Updated v2.0: gender, age, family, father, mother, conflict, mask, sound, loop
 
 export default function HomePage() {
+  const router = useRouter();
+
   // Wizard state
   const [currentStep, setCurrentStep] = useState<WizardStep>('gender');
   const [stepNumber, setStepNumber] = useState(1);
@@ -477,7 +481,12 @@ export default function HomePage() {
           {currentStep === 'review' && (
             <FinalReview
               profile={profile as UserProfile}
-              onConfirm={() => setCurrentStep('processing')}
+              onConfirm={async () => {
+                // Create database record and get case ID
+                const caseId = await createReport(profile as UserProfile);
+                // Navigate to persistent URL
+                router.push(`/report/${caseId}`);
+              }}
               onBack={prevStep}
             />
           )}

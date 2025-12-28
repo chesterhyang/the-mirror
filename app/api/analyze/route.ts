@@ -17,6 +17,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const profile: UserProfile = body.profile;
+    const caseId: string | undefined = body.caseId; // Optional: if provided, update existing record
 
     // Validate the profile (v2.0)
     if (!profile || !profile.gender || !profile.age || !profile.siblings ||
@@ -29,8 +30,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Generate short code for this report
-    const shortCode = generateReportId();
+    // Use provided caseId or generate new one
+    const shortCode = caseId || generateReportId();
 
     // Build the user prompt
     const userPrompt = buildUserPrompt(profile);
@@ -61,20 +62,37 @@ export async function POST(req: Request) {
       flush() {
         // Save to Supabase after streaming completes
         const supabase = getSupabaseServer();
-        supabase
-          .from('soul_reports')
-          .insert({
-            short_code: shortCode,
-            profile: profile,
-            ai_response: fullText,
-          })
-          .then(({ error }) => {
-            if (error) {
-              console.error('Supabase error:', error);
-            } else {
-              console.log('✅ Report saved:', shortCode, `(${fullText.length} chars)`);
-            }
-          });
+
+        if (caseId) {
+          // Update existing record (persistent URL mode)
+          supabase
+            .from('soul_reports')
+            .update({ ai_response: fullText })
+            .eq('short_code', shortCode)
+            .then(({ error }) => {
+              if (error) {
+                console.error('Supabase UPDATE error:', error);
+              } else {
+                console.log('✅ Report updated:', shortCode, `(${fullText.length} chars)`);
+              }
+            });
+        } else {
+          // Insert new record (backward compatibility)
+          supabase
+            .from('soul_reports')
+            .insert({
+              short_code: shortCode,
+              profile: profile,
+              ai_response: fullText,
+            })
+            .then(({ error }) => {
+              if (error) {
+                console.error('Supabase INSERT error:', error);
+              } else {
+                console.log('✅ Report saved:', shortCode, `(${fullText.length} chars)`);
+              }
+            });
+        }
       },
     });
 

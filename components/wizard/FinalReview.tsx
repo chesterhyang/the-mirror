@@ -16,7 +16,7 @@ import CyberButton from '@/components/ui/CyberButton';
 
 interface FinalReviewProps {
   profile: UserProfile;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
   onBack: () => void;
 }
 
