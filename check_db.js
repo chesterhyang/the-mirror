@@ -19,11 +19,11 @@ async function checkReport() {
   const { data: specific, error: err1 } = await supabase
     .from('soul_reports')
     .select('*')
-    .eq('short_code', 'MR-MJPD0FSL-QCJD')
+    .eq('short_code', 'MR-MJPFD8KF-DVAM')
     .single();
 
   if (!err1 && specific) {
-    console.log('\n=== MR-MJPD0FSL-QCJD 详情 ===');
+    console.log('\n=== MR-MJPFD8KF-DVAM 详情 ===');
     console.log('ai_response length:', specific.ai_response?.length || 0);
     console.log('ai_response content:\n', specific.ai_response || 'EMPTY');
   }
