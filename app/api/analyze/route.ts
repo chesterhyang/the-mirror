@@ -48,59 +48,47 @@ export async function POST(req: Request) {
       stream: true,
     });
 
-    // Collect the full response while streaming
+    // Collect the pure text while streaming
     let fullText = '';
 
-    const transformStream = new TransformStream({
-      transform(chunk, controller) {
-        // Decode and accumulate
-        const text = new TextDecoder().decode(chunk);
-        fullText += text;
-        // Forward to client
-        controller.enqueue(chunk);
-      },
-      flush() {
-        // Save to Supabase after streaming completes
+    // Convert OpenAI stream and collect text
+    const stream = OpenAIStream(response as any, {
+      async onFinal(completion) {
+        // Save the final completion text to database
         const supabase = getSupabaseServer();
 
         if (caseId) {
           // Update existing record (persistent URL mode)
-          supabase
+          const { error } = await supabase
             .from('soul_reports')
-            .update({ ai_response: fullText })
-            .eq('short_code', shortCode)
-            .then(({ error }) => {
-              if (error) {
-                console.error('Supabase UPDATE error:', error);
-              } else {
-                console.log('✅ Report updated:', shortCode, `(${fullText.length} chars)`);
-              }
-            });
+            .update({ ai_response: completion })
+            .eq('short_code', shortCode);
+
+          if (error) {
+            console.error('Supabase UPDATE error:', error);
+          } else {
+            console.log('✅ Report updated:', shortCode, `(${completion.length} chars)`);
+          }
         } else {
           // Insert new record (backward compatibility)
-          supabase
+          const { error } = await supabase
             .from('soul_reports')
             .insert({
               short_code: shortCode,
               profile: profile,
-              ai_response: fullText,
-            })
-            .then(({ error }) => {
-              if (error) {
-                console.error('Supabase INSERT error:', error);
-              } else {
-                console.log('✅ Report saved:', shortCode, `(${fullText.length} chars)`);
-              }
+              ai_response: completion,
             });
+
+          if (error) {
+            console.error('Supabase INSERT error:', error);
+          } else {
+            console.log('✅ Report saved:', shortCode, `(${completion.length} chars)`);
+          }
         }
       },
     });
 
-    // Convert to stream and pipe through transformer
-    const stream = OpenAIStream(response as any);
-    const pipedStream = stream.pipeThrough(transformStream);
-
-    return new StreamingTextResponse(pipedStream);
+    return new StreamingTextResponse(stream);
 
   } catch (error) {
     console.error('Analysis API error:', error);
