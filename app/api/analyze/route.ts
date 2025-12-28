@@ -48,47 +48,60 @@ export async function POST(req: Request) {
       stream: true,
     });
 
-    // Collect the pure text while streaming
+    // Manually accumulate the full text from OpenAI chunks
     let fullText = '';
 
-    // Convert OpenAI stream and collect text
-    const stream = OpenAIStream(response as any, {
-      async onFinal(completion) {
-        // Save the final completion text to database
-        const supabase = getSupabaseServer();
+    // Create a custom readable stream to intercept and accumulate chunks
+    const reader = response[Symbol.asyncIterator]();
+    const textStream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of response) {
+            const content = chunk.choices[0]?.delta?.content || '';
+            fullText += content;
 
-        if (caseId) {
-          // Update existing record (persistent URL mode)
-          const { error } = await supabase
-            .from('soul_reports')
-            .update({ ai_response: completion })
-            .eq('short_code', shortCode);
-
-          if (error) {
-            console.error('Supabase UPDATE error:', error);
-          } else {
-            console.log('✅ Report updated:', shortCode, `(${completion.length} chars)`);
+            // Forward to client in Vercel AI SDK format
+            const text = content;
+            if (text) {
+              controller.enqueue(`0:"${text.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"\n`);
+            }
           }
-        } else {
-          // Insert new record (backward compatibility)
-          const { error } = await supabase
-            .from('soul_reports')
-            .insert({
-              short_code: shortCode,
-              profile: profile,
-              ai_response: completion,
-            });
 
-          if (error) {
-            console.error('Supabase INSERT error:', error);
+          // Stream complete - save to database
+          const supabase = getSupabaseServer();
+
+          if (caseId) {
+            // Update existing record
+            await supabase
+              .from('soul_reports')
+              .update({ ai_response: fullText })
+              .eq('short_code', shortCode);
+            console.log('✅ Report updated:', shortCode, `(${fullText.length} chars)`);
           } else {
-            console.log('✅ Report saved:', shortCode, `(${completion.length} chars)`);
+            // Insert new record
+            await supabase
+              .from('soul_reports')
+              .insert({
+                short_code: shortCode,
+                profile: profile,
+                ai_response: fullText,
+              });
+            console.log('✅ Report saved:', shortCode, `(${fullText.length} chars)`);
           }
+
+          controller.close();
+        } catch (error) {
+          console.error('Stream error:', error);
+          controller.error(error);
         }
       },
     });
 
-    return new StreamingTextResponse(stream);
+    return new Response(textStream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+      },
+    });
 
   } catch (error) {
     console.error('Analysis API error:', error);
