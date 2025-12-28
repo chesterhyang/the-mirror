@@ -41,6 +41,9 @@ const TOTAL_STEPS = 9; // Updated v2.0: gender, age, family, father, mother, con
 export default function HomePage() {
   const router = useRouter();
 
+  // Welcome screen state
+  const [showWelcome, setShowWelcome] = useState(true);
+
   // Wizard state
   const [currentStep, setCurrentStep] = useState<WizardStep>('gender');
   const [stepNumber, setStepNumber] = useState(1);
@@ -120,7 +123,10 @@ export default function HomePage() {
   const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowIntro(false), 3000);
+    const timer = setTimeout(() => {
+      setShowIntro(false);
+      // Don't auto-start wizard, wait for user to click
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -161,10 +167,71 @@ export default function HomePage() {
         )}
       </AnimatePresence>
 
+      {/* Welcome Screen - Click to Start */}
+      <AnimatePresence>
+        {!showIntro && showWelcome && (
+          <motion.div
+            className="fixed inset-0 z-40 bg-void flex flex-col items-center justify-center px-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="text-center max-w-2xl"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Scan className="w-16 h-16 text-neon-red mx-auto mb-6" />
+
+              <h1 className="heading-cinzel text-5xl text-terminal-green mb-4">
+                THE MIRROR
+              </h1>
+              <p className="chinese-serif text-3xl text-ghost-white/80 mb-8">
+                命运矩阵 · 灵魂解剖
+              </p>
+
+              <p className="font-mono text-sm text-ghost-white/60 mb-12 leading-relaxed">
+                基于9维心理画像的深度分析系统<br/>
+                硬编码16种家庭化学反应<br/>
+                输出800+字专业级诊断报告
+              </p>
+
+              <motion.button
+                onClick={() => setShowWelcome(false)}
+                className="px-12 py-4 font-mono text-lg uppercase tracking-wider border-2 border-terminal-green text-terminal-green hover:bg-terminal-green hover:text-void transition-all"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                animate={{
+                  boxShadow: [
+                    '0 0 20px rgba(0, 255, 65, 0.3)',
+                    '0 0 40px rgba(0, 255, 65, 0.6)',
+                    '0 0 20px rgba(0, 255, 65, 0.3)',
+                  ],
+                }}
+                transition={{
+                  boxShadow: {
+                    duration: 2,
+                    repeat: Infinity,
+                  },
+                }}
+              >
+                <div>BEGIN ANALYSIS</div>
+                <div className="chinese-serif text-sm mt-1">开始分析</div>
+              </motion.button>
+
+              <p className="mt-8 font-mono text-xs text-ghost-white/30">
+                点击后将开始9步深度画像采集
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Main Container */}
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
-        {currentStep !== 'processing' && currentStep !== 'report' && currentStep !== 'review' && (
+        {!showWelcome && currentStep !== 'processing' && currentStep !== 'report' && currentStep !== 'review' && (
           <motion.header
             className="text-center mb-12"
             initial={{ opacity: 0, y: -20 }}
@@ -183,9 +250,10 @@ export default function HomePage() {
         )}
 
         {/* Wizard Steps */}
-        <AnimatePresence mode="wait">
-          {/* Step 1: Gender */}
-          <WizardStepComponent
+        {!showWelcome && (
+          <AnimatePresence mode="wait">
+            {/* Step 1: Gender */}
+            <WizardStepComponent
             stepNumber={1}
             totalSteps={TOTAL_STEPS}
             title="SUBJECT_GENDER"
@@ -522,7 +590,8 @@ export default function HomePage() {
               <TerminalLogs onComplete={handleProcessingComplete} />
             </motion.div>
           )}
-        </AnimatePresence>
+          </AnimatePresence>
+        )}
       </div>
     </div>
   );
