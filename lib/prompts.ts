@@ -249,11 +249,25 @@ You MUST answer these questions in your analysis:
    - Write ONE sharp instruction (5-15 Chinese words)
    - Blunt but memorable
 
+**CRITICAL INTEGRATION REQUIREMENTS (整合所有维度):**
+
+You MUST explicitly analyze how these factors INTERACT with the core diagnosis:
+
+1. **出生顺序 × 父母模式 (Birth Order Impact):**
+   - Subject is: #${birthOrder + 1} of ${totalSiblings} (${siblingDesc})
+   - Analysis: How does being ${birthOrder === 0 ? '长子/长女' : birthOrder === totalSiblings - 1 ? '幼子/幼女' : totalSiblings === 1 ? '独生子女' : '中间孩子'} amplify or modify the "${reaction.title}" pattern?
+   - Example: "作为长子，你不仅要拯救母亲，还要替代父亲成为权威，这让你的负担加倍"
+
+2. **性别 × 父母投射 (Gender Dynamics):**
+   - Subject gender: ${profile.gender}
+   - Analysis: How does being ${profile.gender} affect what ${fatherInfo.en} and ${motherInfo.en} expected or projected onto you?
+   - Example: "作为儿子，暴君父亲更容易将你视为竞争对手，而不是盟友"
+
 **FINAL MANDATE:**
 - **TOTAL OUTPUT: 800-1000 words minimum**
-- **CONNECT ALL 9 VARIABLES:** Show how each input shaped the outcome
-- **BE UNCOMFORTABLY SPECIFIC:** Use their exact Father/Mother/Sound/Loop combo
-- **NO FLUFF:** Every sentence must add insight
+- **CONNECT ALL VARIABLES:** Show how Gender + Birth Order + Father + Mother + Sound + Conflict + Mask + Loop create THIS SPECIFIC outcome
+- **BE UNCOMFORTABLY SPECIFIC:** Use their exact combination
+- **NO GENERIC ANALYSIS:** Every sentence must be tailored to THIS profile
 - BE A FORENSIC ANALYST WITH PHILOSOPHICAL DEPTH
 
 Execute with surgical precision and narrative force.
